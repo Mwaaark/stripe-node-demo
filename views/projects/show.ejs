@@ -1,0 +1,56 @@
+<% layout('layouts/boilerplate') %>
+
+<section>
+  <div class="container">
+    <div class="card mb-3">
+      <div class="row g-0">
+        <div class="col-md-4">
+          <img
+            src="<%= project.image %>"
+            class="img-fluid rounded-start"
+            alt="<%= project.title %>"
+          />
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h5 class="card-title"><%= project.title %></h5>
+            <p class="card-text"><%= project.description %></p>
+            <p class="card-text">
+              <small class="text-muted"
+                ><%= new Intl.NumberFormat('en-US', { style: 'currency',
+                currency: 'PHP' }).format(project.targetAmount) %> goal</small
+              >
+            </p>
+
+            <form
+              action="/projects/<%= project._id %>/create-checkout-session"
+              method="POST"
+            >
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="donationAmount">PHP</span>
+                <input
+                  type="number"
+                  name="donationAmount"
+                  class="form-control"
+                  aria-label="Donation Amount"
+                  aria-describedby="donationAmount"
+                  placeholder="Enter your donation amount"
+                  min="50"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="checkout-button"
+              >
+                Donate Now
+              </button>
+              <a href="/projects" class="btn btn-secondary">Go Back</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

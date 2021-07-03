@@ -1,0 +1,38 @@
+<% layout('layouts/boilerplate') %>
+
+<section>
+  <div class="container">
+    <h1>All Projects</h1>
+    <a href="/projects/new" class="btn btn-primary">Add New</a>
+    <% for(let project of projects) { %>
+    <div class="card mb-3">
+      <div class="row g-0">
+        <div class="col-md-4">
+          <img
+            src="<%= project.image %>"
+            class="img-fluid rounded-start"
+            alt="<%= project.title %>"
+          />
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h5 class="card-title"><%= project.title %></h5>
+            <p class="card-text"><%= project.description %></p>
+            <p class="card-text">
+              <small class="text-muted"
+                ><%= new Intl.NumberFormat('en-US', { style: 'currency',
+                currency: 'PHP' }).format(project.targetAmount) %> goal</small
+              >
+            </p>
+            <a
+              href="/projects/<%= project._id %>"
+              class="btn btn-primary stretched-link"
+              >View Project</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</section>

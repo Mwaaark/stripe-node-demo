@@ -1,0 +1,44 @@
+<% layout('layouts/boilerplate') %>
+
+<section>
+  <div class="container">
+    <h1>Add New</h1>
+    <form action="/projects" method="POST">
+      <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input id="title" type="text" name="title" class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label for="image" class="form-label">Image URL</label>
+        <input id="image" type="text" name="image" class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <input
+          id="description"
+          type="text"
+          name="description"
+          class="form-control"
+        />
+      </div>
+
+      <label for="targetAmount" class="form-label">Target Amount</label>
+      <div class="input-group mb-3">
+        <span class="input-group-text" id="targetAmount">PHP</span>
+        <input
+          id="targetAmount"
+          type="number"
+          name="targetAmount"
+          class="form-control"
+          aria-label="Target Amount"
+          aria-describedby="targetAmount"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Submit</button>
+      <a href="/projects" class="btn btn-secondary">Go Back</a>
+    </form>
+  </div>
+</section>
