@@ -47,9 +47,9 @@ const webhookCheckout = (req, res) => {
 
   if (event.type === "checkout.session.completed") {
     console.log("test webhook");
-
-    res.status(200).json({ received: true });
   }
+
+  res.status(200).json({ received: true });
 };
 
 module.exports = {
