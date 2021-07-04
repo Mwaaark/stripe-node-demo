@@ -10,6 +10,7 @@ const createCheckoutSession = async (req, res) => {
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
+    client_reference_id: req.params.id,
     line_items: [
       {
         price_data: {
@@ -31,6 +32,21 @@ const createCheckoutSession = async (req, res) => {
   res.redirect(303, session.url);
 };
 
+const createDonationCheckout = async (session) => {
+  const { client_reference_id: id, amount_total } = session;
+
+  const project = await Project.findById(id);
+
+  const donation = new Donation({
+    amount: amount_total / 100,
+  });
+
+  project.donations.push(donation);
+
+  await donation.save();
+  await project.save();
+};
+
 const webhookCheckout = (req, res) => {
   const signature = req.headers["stripe-signature"];
 
@@ -46,10 +62,10 @@ const webhookCheckout = (req, res) => {
   }
 
   if (event.type === "checkout.session.completed") {
-    console.log("test webhook");
-  }
+    createDonationCheckout(event.data.object);
 
-  res.status(200).json({ received: true });
+    res.status(200).json({ received: true });
+  }
 };
 
 module.exports = {
