@@ -3,25 +3,6 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const Project = require("../models/project");
 const Donation = require("../models/donation");
 
-const webhookCheckout = (req, res) => {
-  const signature = req.headers["stripe-signature"];
-
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-  } catch (error) {
-    return res.status(400).send(`Webhook error: ${error.message}`);
-  }
-
-  if (event.type === "checkout.session.completed") {
-    console.log("test webhook");
-  }
-};
-
 const createCheckoutSession = async (req, res) => {
   const { donationAmount } = req.body;
 
@@ -50,7 +31,28 @@ const createCheckoutSession = async (req, res) => {
   res.redirect(303, session.url);
 };
 
+const webhookCheckout = (req, res) => {
+  const signature = req.headers["stripe-signature"];
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (error) {
+    return res.status(400).send(`Webhook error: ${error.message}`);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    console.log("test webhook");
+
+    res.status(200).json({ received: true });
+  }
+};
+
 module.exports = {
-  webhookCheckout,
   createCheckoutSession,
+  webhookCheckout,
 };
