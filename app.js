@@ -4,12 +4,13 @@ if (process.env.NODE_ENV !== "production") {
 
 const express = require("express");
 const mongoose = require("mongoose");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const path = require("path");
 const ejsMate = require("ejs-mate");
 
-const Project = require("./models/project");
-const Donation = require("./models/donation");
+const projectRoutes = require("./routes/projects-routes");
+const donationRoutes = require("./routes/donations-routes");
+
+const { webhookCheckout } = require("./controllers/donations-controllers");
 
 const dbUrl =
   process.env.DATABASE_URL || "mongodb://localhost:27017/stripe-node-demo";
@@ -35,99 +36,18 @@ app.set("views", path.join(__dirname, "views"));
 app.post(
   "/projects/webhook-checkout",
   express.raw({ type: "application/json" }),
-  (req, res) => {
-    const signature = req.headers["stripe-signature"];
-
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        signature,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } catch (error) {
-      return res.status(400).send(`Webhook error: ${error.message}`);
-    }
-
-    if (event.type === "checkout.session.completed") {
-      console.log("test webhook");
-    }
-  }
+  webhookCheckout
 );
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
+app.use("/projects", projectRoutes);
+app.use("/projects/:id/donations", donationRoutes);
+
 app.get("/", (req, res) => {
   res.redirect("/projects");
-});
-
-app.get("/projects", async (req, res) => {
-  const projects = await Project.find();
-
-  res.render("projects/index", { projects });
-});
-
-app.get("/projects/new", (req, res) => {
-  res.render("projects/new");
-});
-
-app.post("/projects", async (req, res) => {
-  const { title, image, description, targetAmount } = req.body;
-
-  const project = await new Project({
-    title,
-    image,
-    description,
-    targetAmount,
-  });
-
-  await project.save();
-
-  res.redirect("/projects");
-});
-
-app.get("/projects/:id", async (req, res) => {
-  if (req.query.success) {
-    console.log("success");
-  }
-
-  if (req.query.cancel) {
-    console.log("cancel");
-  }
-
-  const project = await Project.findById(req.params.id).populate("donations");
-
-  res.render("projects/show", { project });
-});
-
-app.post("/projects/:id/create-checkout-session", async (req, res) => {
-  const { donationAmount } = req.body;
-
-  const project = await Project.findById(req.params.id);
-
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price_data: {
-          currency: "php",
-          product_data: {
-            name: project.title,
-            images: [project.image],
-          },
-          unit_amount: +donationAmount * 100,
-        },
-        quantity: 1,
-      },
-    ],
-    mode: "payment",
-    success_url: `${process.env.DOMAIN_NAME}/projects/${req.params.id}?success=true`,
-    cancel_url: `${process.env.DOMAIN_NAME}/projects/${req.params.id}?cancel=true`,
-  });
-
-  res.redirect(303, session.url);
 });
 
 const port = process.env.PORT || 3000;
