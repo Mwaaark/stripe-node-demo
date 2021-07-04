@@ -6,7 +6,13 @@ const ProjectSchema = new Schema({
   image: String,
   description: String,
   targetAmount: Number,
-  raisedAmount: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  donations: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Donation",
+    },
+  ],
 });
 
 module.exports = mongoose.model("Project", ProjectSchema);

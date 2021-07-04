@@ -9,6 +9,7 @@ const path = require("path");
 const ejsMate = require("ejs-mate");
 
 const Project = require("./models/project");
+const Donation = require("./models/donation");
 
 const dbUrl =
   process.env.DATABASE_URL || "mongodb://localhost:27017/stripe-node-demo";
@@ -29,6 +30,30 @@ const app = express();
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+// STRIPE WEBHOOK
+app.post(
+  "/projects/webhook-checkout",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const signature = req.headers["stripe-signature"];
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (error) {
+      return res.status(400).send(`Webhook error: ${error.message}`);
+    }
+
+    if (event.type === "checkout.session.completed") {
+      console.log("test webhook");
+    }
+  }
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -72,7 +97,7 @@ app.get("/projects/:id", async (req, res) => {
     console.log("cancel");
   }
 
-  const project = await Project.findById(req.params.id);
+  const project = await Project.findById(req.params.id).populate("donations");
 
   res.render("projects/show", { project });
 });

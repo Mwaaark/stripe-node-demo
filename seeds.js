@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Project = require("./models/project");
+const Donation = require("./models/donation");
 
 const dbUrl =
   process.env.DATABASE_URL || "mongodb://localhost:27017/stripe-node-demo";
@@ -17,7 +18,8 @@ db.once("open", function () {
 
 const seedDB = async () => {
   await Project.deleteMany({});
-  for (let i = 0; i < 6; i++) {
+  await Donation.deleteMany({});
+  for (let i = 0; i < 3; i++) {
     const project = new Project({
       title: `Integer lobortis pulvinar ${i + 1}`,
       image:
@@ -26,6 +28,16 @@ const seedDB = async () => {
         "Mauris placerat porttitor erat egestas ullamcorper. Morbi non leo aliquet, placerat ante at, finibus eros. Nam rhoncus nibh quis laoreet consequat.",
       targetAmount: 30000,
     });
+
+    for (let j = 0; j < 3; j++) {
+      const donation = new Donation({
+        amount: j + 50,
+      });
+
+      project.donations.push(donation);
+
+      await donation.save();
+    }
 
     await project.save();
   }
